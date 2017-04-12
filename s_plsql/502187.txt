@@ -1,0 +1,125 @@
+Employee ID : 502187
+
+==========================================================
+Q1) 
+
+===================== Creating Procedure ======================
+
+create or replace procedure Update_Salary(e_id  executive.executive_id%type) as
+v_sal executive.executive_salary%type;
+v_role executive.executive_role%type;
+
+begin
+select executive_salary into v_sal from executive where executive_id=e_id;
+dbms_output.put_line('Salary is : '||v_sal);
+
+select executive_role into v_role from executive where executive_id=e_id;
+
+
+update executive set executive_salary=executive_salary*0.3 where v_role like 'manager';
+
+
+update executive set executive_salary=executive_salary*0.2 where v_role not like 'manager';
+
+dbms_output.put_line(' Salary Updated !!!!!!!!!!');
+
+exception
+when no_data_found then
+dbms_output.put_line('Invalid Executive Id ');
+
+
+end;
+/
+
+===================== Execution ========================
+
+execute Update_Salary(15534);
+
+
+===========================================================================================
+Q2) 
+
+===================== Creating Package ==========================
+
+create or replace package Hotel_Details as
+procedure Print_Report(h_code hotel.hotel_code%type);
+end;
+/
+
+===================== Creating Package Body =========================
+
+create or replace package body Hotel_Details as
+procedure Print_Report(h_code hotel.hotel_code%type) as
+v_code hotel.hotel_code%type;
+v_name hotel.hotel_name%type;
+v_add hotel.hotel_address%type;
+v_city hotel.hotel_city%type;
+begin
+
+select hotel_code,hotel_name,hotel_address,hotel_city into v_code,v_name,v_add,v_city from hotel where hotel_code=h_code;
+dbms_output.put_line('****************************************************************************');
+dbms_output.put_line('Hotel Code :  '||v_code);
+dbms_output.put_line('Hotel Name :  '||v_name);
+dbms_output.put_line('Hotel Address :  '||v_add);
+dbms_output.put_line('Hotel City :  '||v_city);
+dbms_output.put_line('****************************************************************************');
+exception 
+when no_data_found then
+dbms_output.put_line(' Invalid Hotel Code');
+end;
+end;
+/
+
+
+====================== Execution ===============================
+
+execute Hotel_Details.Print_Report('Wovo_ASM');
+
+
+======================================================================================================
+
+Q3) 
+-------------------Using VArray ------------------
+
+create or replace type Address_Object as object(house_no number(6), street varchar2(20), city varchar2(20), pincode number(8), state varchar2(20));
+
+
+create or replace type AddressTab as varray(6) of Address_object;
+
+
+create table Student(student_id number primary key, student_name varchar2(20), student_address AddressTab);
+
+insert into Student values(101,'David',AddressTab(Address_Object(1,'Nisarg','Pune',411026,'Maharashtra'),Address_Object(2,'Himalay','Lahore',411038,'Punjab')));
+
+
+insert into Student values(102,'Miller',AddressTab(Address_Object(3,'lane1','Nagpur',411019,'Maharashtra'),Address_Object(4,'lane2','Akola',411002,'Maharashtra')));
+
+
+insert into Student values(103,'Messi',AddressTab(Address_Object(5,'lane5','Telangana',411056,'AP'),Address_Object(6,'Lane6','Uppal',411037,'AP')));
+
+
+select p.student_address.Address_Object.city,p.student_address.Adrress_Object.pincode,p.student_address.Address_Object.state from Student p where student_id=101;
+
+
+------------------- Using Nested Table --------------
+
+
+create or replace type Address_Object as object(house_no number(6), street varchar2(20), city varchar2(20), pincode number(8), state varchar2(20));
+
+
+create or replace type AddressTab as table of Address_Object;
+
+create table Student(student_id number primary key, student_name varchar2(20), student_address AddressTab)nested table student_address store as Student1;
+
+ 
+insert into Student values(101,'David',AddressTab(Address_Object(1,'Nisarg','Pune',411026,'Maharashtra'),Address_Object(2,'Himalay','Lahore',411038,'Punjab')));
+
+
+insert into Student values(102,'Miller',AddressTab(Address_Object(3,'lane1','Nagpur',411019,'Maharashtra'),Address_Object(4,'lane2','Akola',411002,'Maharashtra')));
+
+
+insert into Student values(103,'Messi',AddressTab(Address_Object(5,'lane5','Telangana',411056,'AP'),Address_Object(6,'Lane6','Uppal',411037,'AP')));
+
+
+select p.student_address.Address_Object.city,p.student_address.Adrress_Object.pincode,p.student_address.Address_Object.state from Student p where student_id=101;
+
